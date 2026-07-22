@@ -1,7 +1,12 @@
 /**
  * App.jsx — Root application component.
- * Sets up React Router with three routes: Map, Report, Dashboard.
- * Navbar persists across all pages.
+ *
+ * Layout:
+ *   - `<main>` has paddingTop=60px (top navbar height)
+ *   - On mobile the bottom 64px is reserved for the bottom tab bar;
+ *     individual pages (ReportForm, Dashboard) apply their own paddingBottom.
+ *   - MapView handles its own full-bleed height via .map-height CSS class
+ *     and does NOT inherit scroll from main.
  */
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
@@ -15,14 +20,14 @@ export default function App() {
       <Navbar />
 
       {/*
-        Main content area:
-        - Top padding = navbar height (60px)
-        - Bottom padding = mobile bottom nav height (64px on small screens)
+        paddingTop = top navbar height.
+        No paddingBottom here — each page sets its own clearance
+        so that the map is flush while form/dashboard scroll properly.
       */}
-      <main style={{ paddingTop: '60px' }}>
+      <main style={{ paddingTop: '60px', minHeight: '100dvh', boxSizing: 'border-box' }}>
         <Routes>
-          <Route path="/" element={<MapView />} />
-          <Route path="/report" element={<ReportForm />} />
+          <Route path="/"          element={<MapView />} />
+          <Route path="/report"    element={<ReportForm />} />
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </main>

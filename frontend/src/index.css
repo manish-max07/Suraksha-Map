@@ -23,6 +23,10 @@
   --green: #00c853;
   --green-glow: rgba(0, 200, 83, 0.2);
   --blue: #4f8ef7;
+
+  /* Safe-area: navbar (60px) + mobile bottom nav (64px) */
+  --nav-top: 60px;
+  --nav-bottom: 64px;
 }
 
 /* ── Base Reset ────────────────────────────────────────────────────────────── */
@@ -46,6 +50,34 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ── Map height helpers ─────────────────────────────────────────────────────── */
+/*
+  On mobile (<768px): subtract top nav (60px) AND bottom nav (64px).
+  On desktop (≥768px): only subtract top nav (60px).
+*/
+.map-height {
+  height: calc(100dvh - var(--nav-top) - var(--nav-bottom));
+}
+@media (min-width: 768px) {
+  .map-height {
+    height: calc(100dvh - var(--nav-top));
+  }
+}
+
+/* ── Safe-area bottom clearance (above mobile nav) ──────────────────────────── */
+/*
+  Elements that float above the bottom nav need bottom clearance.
+  64px nav + 12px gap = 76px on mobile. Desktop: just 16px.
+*/
+.bottom-safe {
+  bottom: calc(var(--nav-bottom) + 12px);
+}
+@media (min-width: 768px) {
+  .bottom-safe {
+    bottom: 16px;
+  }
+}
+
 /* ── Scrollbar ─────────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -56,6 +88,27 @@ body {
 .leaflet-container {
   background: #0a0f1c !important;
   font-family: 'Inter', sans-serif;
+}
+
+/* Move Leaflet zoom to bottom-right so it doesn't conflict with top-right layer toggles */
+.leaflet-control-zoom {
+  border: 1px solid var(--border-strong) !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+}
+
+.leaflet-control-zoom a {
+  background: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border) !important;
+  width: 36px !important;
+  height: 36px !important;
+  line-height: 36px !important;
+  font-size: 18px !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: var(--bg-hover) !important;
 }
 
 .leaflet-popup-content-wrapper {
@@ -70,10 +123,13 @@ body {
 
 .leaflet-popup-content {
   margin: 0 !important;
-  padding: 14px 16px !important;
+  padding: 12px 14px !important;
   font-size: 13px !important;
   line-height: 1.6 !important;
   color: var(--text-primary) !important;
+  /* prevent popup from going wider than screen */
+  max-width: min(280px, calc(100vw - 48px)) !important;
+  word-break: break-word !important;
 }
 
 .leaflet-popup-tip {
@@ -92,26 +148,15 @@ body {
   background: transparent !important;
 }
 
-.leaflet-control-zoom {
-  border: 1px solid var(--border-strong) !important;
-  border-radius: 10px !important;
-  overflow: hidden;
-}
-
-.leaflet-control-zoom a {
-  background: var(--bg-elevated) !important;
-  color: var(--text-primary) !important;
-  border-bottom: 1px solid var(--border) !important;
-}
-
-.leaflet-control-zoom a:hover {
-  background: var(--bg-hover) !important;
-}
-
 .leaflet-control-attribution {
   background: rgba(7,13,26,0.8) !important;
   color: var(--text-muted) !important;
   font-size: 10px !important;
+  /* ensure it doesn't overflow on small screens */
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .leaflet-control-attribution a {
@@ -133,71 +178,74 @@ body {
   color: var(--teal);
   border: 1px solid rgba(0, 212, 170, 0.3);
 }
-
 .badge-not_working {
   background: rgba(255, 68, 68, 0.15);
   color: var(--red);
   border: 1px solid rgba(255, 68, 68, 0.3);
 }
-
 .badge-flickering {
   background: rgba(255, 179, 0, 0.15);
   color: var(--amber);
   border: 1px solid rgba(255, 179, 0, 0.3);
 }
-
 .badge-red {
   background: rgba(255, 68, 68, 0.15);
   color: var(--red);
   border: 1px solid rgba(255, 68, 68, 0.3);
 }
-
 .badge-yellow {
   background: rgba(255, 179, 0, 0.15);
   color: var(--amber);
   border: 1px solid rgba(255, 179, 0, 0.3);
 }
-
 .badge-green {
   background: rgba(0, 200, 83, 0.15);
   color: var(--green);
   border: 1px solid rgba(0, 200, 83, 0.3);
 }
 
-/* ── Pulse animation for user location dot ─────────────────────────────────── */
-@keyframes locationPulse {
-  0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(3); opacity: 0; }
-}
-
 /* ── Slide-up animation ────────────────────────────────────────────────────── */
 @keyframes slideUp {
-  from { transform: translateY(100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
 }
-
 .animate-slide-up {
-  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slideUp 0.32s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ── Fade in ───────────────────────────────────────────────────────────────── */
+/* ── Fade in (for error/notice banners) ────────────────────────────────────── */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
 .animate-fade-in {
-  animation: fadeIn 0.25s ease-out;
+  animation: fadeIn 0.22s ease-out;
 }
 
 /* ── Warning pulse glow ────────────────────────────────────────────────────── */
 @keyframes warningPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(255, 68, 68, 0); }
+  0%   { box-shadow: 0 0 0 0   rgba(255, 68, 68, 0.55); }
+  60%  { box-shadow: 0 0 0 10px rgba(255, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0   rgba(255, 68, 68, 0); }
+}
+.warning-pulse {
+  animation: warningPulse 1.8s ease-out infinite;
 }
 
-.warning-pulse {
-  animation: warningPulse 2s ease-in-out infinite;
+/* ── Teal ring pulse (user location) ──────────────────────────────────────── */
+@keyframes tealPulse {
+  0%   { box-shadow: 0 0 0 0   rgba(0, 212, 170, 0.45); }
+  60%  { box-shadow: 0 0 0 10px rgba(0, 212, 170, 0); }
+  100% { box-shadow: 0 0 0 0   rgba(0, 212, 170, 0); }
+}
+
+/* ── Spinner ───────────────────────────────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 3px solid rgba(0,212,170,0.15);
+  border-top-color: #00d4aa;
+  animation: spin 0.75s linear infinite;
 }
 
 /* ── Gradient text ─────────────────────────────────────────────────────────── */
@@ -208,18 +256,16 @@ body {
   background-clip: text;
 }
 
-/* ── Recharts override ─────────────────────────────────────────────────────── */
+/* ── Recharts overrides ────────────────────────────────────────────────────── */
 .recharts-cartesian-grid-horizontal line,
 .recharts-cartesian-grid-vertical line {
   stroke: rgba(255, 255, 255, 0.06) !important;
 }
-
 .recharts-text {
   fill: #8892a4 !important;
-  font-size: 12px !important;
+  font-size: 11px !important;
   font-family: 'Inter', sans-serif !important;
 }
-
 .recharts-tooltip-wrapper .recharts-default-tooltip {
   background: var(--bg-elevated) !important;
   border: 1px solid var(--border-strong) !important;
@@ -229,12 +275,26 @@ body {
 
 /* ── Shimmer loader ────────────────────────────────────────────────────────── */
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
 }
-
 .shimmer {
-  background: linear-gradient(90deg, var(--bg-surface) 25%, var(--bg-elevated) 50%, var(--bg-surface) 75%);
+  background: linear-gradient(
+    90deg,
+    var(--bg-surface) 25%,
+    var(--bg-elevated) 50%,
+    var(--bg-surface) 75%
+  );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
+}
+
+/* ── Touch-friendly hit areas ─────────────────────────────────────────────── */
+/* Ensure tappable elements always have at least 44px touch target */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
