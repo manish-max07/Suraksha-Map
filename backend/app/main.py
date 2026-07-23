@@ -42,6 +42,10 @@ app = FastAPI(
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
+    # Disable automatic 307 redirects between /path and /path/.
+    # Without this, CORS pre-flight headers are stripped on the redirected
+    # request, causing browsers to block it with a CORS error.
+    redirect_slashes=False,
 )
 
 app.add_middleware(

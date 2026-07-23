@@ -1,11 +1,14 @@
 """
 routes/streetlights.py — CRUD endpoints for streetlight reports.
 
-Endpoints:
-  POST   /streetlights          → Create a new streetlight report
-  GET    /streetlights          → List all streetlights (optional ?status= filter)
-  GET    /streetlights/stats    → Aggregated counts by status
-  GET    /streetlights/{id}     → Get a single streetlight by ID
+Endpoints (all paths are canonical — trailing slashes where shown):
+  POST   /streetlights/       → Create a new streetlight report
+  GET    /streetlights/       → List all streetlights (optional ?status= filter)
+  GET    /streetlights/stats  → Aggregated counts by status (NO trailing slash)
+  GET    /streetlights/{id}   → Get a single streetlight by ID (NO trailing slash)
+
+Note: redirect_slashes=False is set on the FastAPI app, so the exact path
+called by the client must match the decorator — no 307 redirect fallback.
 """
 from datetime import datetime, timezone
 from typing import Optional

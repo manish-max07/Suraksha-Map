@@ -1,6 +1,18 @@
 /**
  * api/client.js — Centralised Axios API client for Suraksha Map backend.
- * All requests proxy through Vite's /api → http://localhost:8000.
+ *
+ * All requests proxy through Vite's /api → backend base URL.
+ *
+ * IMPORTANT — trailing-slash discipline:
+ *   The FastAPI app runs with redirect_slashes=False, meaning the server will
+ *   NOT issue a 307 redirect to add/remove a trailing slash.  Every URL here
+ *   must match the backend route decorator exactly:
+ *
+ *   POST  /streetlights/       ← trailing slash (list/create collection)
+ *   GET   /streetlights/       ← trailing slash (list/create collection)
+ *   GET   /streetlights/stats  ← NO trailing slash (named sub-resource)
+ *   GET   /streetlights/{id}   ← NO trailing slash (path param)
+ *   GET   /hotspots/           ← trailing slash (list collection)
  */
 import axios from 'axios'
 
@@ -14,7 +26,7 @@ const api = axios.create({
 
 /** Fetch all streetlights. Pass `status` to filter ('working'|'not_working'|'flickering') */
 export const fetchStreetlights = (status) =>
-  api.get('/streetlights', { params: status ? { status } : {} }).then((r) => r.data)
+  api.get('/streetlights/', { params: status ? { status } : {} }).then((r) => r.data)
 
 /** Fetch a single streetlight by ID */
 export const fetchStreetlight = (id) =>
@@ -32,4 +44,4 @@ export const createStreetlight = (payload) =>
 
 /** Fetch all crime hotspot zones */
 export const fetchHotspots = () =>
-  api.get('/hotspots').then((r) => r.data)
+  api.get('/hotspots/').then((r) => r.data)

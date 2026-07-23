@@ -1,8 +1,11 @@
 """
 routes/hotspots.py — Read-only endpoints for crime hotspot zones.
 
-Endpoints:
-  GET /hotspots → List all crime hotspot zones
+Endpoints (all paths are canonical — trailing slashes where shown):
+  GET /hotspots/  → List all crime hotspot zones (trailing slash required)
+
+Note: redirect_slashes=False is set on the FastAPI app, so the exact path
+called by the client must match the decorator — no 307 redirect fallback.
 """
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
